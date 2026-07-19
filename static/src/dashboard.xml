@@ -1,0 +1,341 @@
+
+<templates xml:space="preserve">
+
+    <t t-name="sales_dashboard.Dashboard">
+
+        <div class="o_sales_dashboard p-4">
+
+            <!-- ========================= -->
+            <!-- Loading -->
+            <!-- ========================= -->
+
+            <t t-if="state.loading">
+
+                <div class="text-center py-5">
+
+                    <i class="fa fa-spinner fa-spin fa-3x text-primary"/>
+
+                    <h4 class="mt-3">
+                        Loading Dashboard...
+                    </h4>
+
+                </div>
+
+            </t>
+
+
+            <!-- ========================= -->
+            <!-- Error -->
+            <!-- ========================= -->
+
+            <t t-elif="state.error">
+
+                <div class="alert alert-danger">
+
+                    <h4>
+
+                        <i class="fa fa-warning me-2"/>
+
+                        Failed to load dashboard
+
+                    </h4>
+
+                </div>
+
+            </t>
+
+
+            <!-- ========================= -->
+            <!-- Dashboard -->
+            <!-- ========================= -->
+
+            <t t-else="">
+
+
+                <!-- Title -->
+
+                <div class="mb-4">
+
+                    <h2>
+
+                        <i class="fa fa-line-chart me-2"/>
+
+                        Sales Dashboard
+
+                    </h2>
+
+                </div>
+
+
+                <!-- ================= KPI ================= -->
+
+                <div class="row g-3 mb-4">
+
+
+                    <!-- Total Sales -->
+
+                    <div class="col-lg-3 col-md-6">
+
+                        <div class="card shadow-sm border-0">
+
+                            <div class="card-body">
+
+                                <div class="d-flex justify-content-between">
+
+                                    <div>
+
+                                        <small class="text-muted">
+                                            Total Sales
+                                        </small>
+
+                                        <h3>
+
+                                            <t t-esc="state.kpis.totalSales"/>
+
+                                        </h3>
+
+                                    </div>
+
+                                    <i class="fa fa-dollar fa-2x text-success"/>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- Orders -->
+
+                    <div class="col-lg-3 col-md-6">
+
+                            <div class="card shadow-sm border-0"
+                                    style="cursor:pointer;"  t-on-click="() => this.openView( 'sale.order', [['state','=','sale']], 'Sales Orders'   )">
+
+
+                            <div class="card-body">
+
+                                <div class="d-flex justify-content-between">
+
+                                    <div>
+
+                                        <small class="text-muted">
+
+                                            Orders
+
+                                        </small>
+
+                                        <h3>
+
+                                            <t t-esc="state.kpis.totalOrders"/>
+
+                                        </h3>
+
+                                    </div>
+
+                                    <i class="fa fa-shopping-cart fa-2x text-primary"/>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- Customers -->
+
+                    <div class="col-lg-3 col-md-6">
+
+                        <div class="card" t-on-click="() => this.openView( 'res.partner', [['customer_rank','>',0]], 'Customers'  )">
+
+                            <div class="card-body">
+
+                                <div class="d-flex justify-content-between">
+
+                                    <div>
+
+                                        <small class="text-muted">
+
+                                            Customers
+
+                                        </small>
+
+                                        <h3>
+
+                                            <t t-esc="state.kpis.totalCustomers"/>
+
+                                        </h3>
+
+                                    </div>
+
+                                    <i class="fa fa-users fa-2x text-info"/>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- Average Order -->
+
+                    <div class="col-lg-3 col-md-6">
+
+                        <div class="card shadow-sm border-0">
+
+                            <div class="card-body">
+
+                                <div class="d-flex justify-content-between">
+
+                                    <div>
+
+                                        <small class="text-muted">
+
+                                            Average Order
+
+                                        </small>
+
+                                        <h3>
+
+                                            <t t-esc="state.kpis.averageOrder.toFixed(2)"/>
+
+                                        </h3>
+
+                                    </div>
+
+                                    <i class="fa fa-calculator fa-2x text-warning"/>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================= Chart ================= -->
+
+                <div class="card shadow-sm border-0 mb-4">
+
+                    <div class="card-header">
+
+                        <strong>
+
+                            Monthly Sales
+
+                        </strong>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <div style="height:400px;">
+
+                            <canvas t-ref="salesChart"/>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ================= Latest Orders ================= -->
+
+                <div class="card shadow-sm border-0">
+
+                    <div class="card-header">
+
+                        <strong>
+
+                            Latest Orders
+
+                        </strong>
+
+                    </div>
+
+                    <div class="table-responsive">
+
+                        <table class="table table-hover table-striped mb-0">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>Order</th>
+
+                                    <th>Customer</th>
+
+                                    <th>Date</th>
+
+                                    <th class="text-end">
+
+                                        Total
+
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr
+                                    t-foreach="state.latestOrders"
+                                    t-as="order"
+                                    t-key="order.id">
+
+                                    <td>
+
+                                        <t t-esc="order.name"/>
+
+                                    </td>
+
+                                    <td>
+
+                                        <t t-esc="order.partner_id[1]"/>
+
+                                    </td>
+
+                                    <td>
+
+                                        <t t-esc="order.date_order"/>
+
+                                    </td>
+
+                                    <td class="text-end">
+
+                                        <t t-esc="order.amount_total"/>
+
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </t>
+
+        </div>
+
+    </t>
+
+</templates>
